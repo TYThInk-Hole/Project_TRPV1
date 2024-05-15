@@ -1,0 +1,136 @@
+using SymbolicRegression, SymbolicUtils
+using MLJ
+using Plots, DifferentialEquations, Evolutionary, DataDrivenDiffEq, Logging
+using XLSX, DataFrames
+
+df=XLSX.readxlsx("/Users/tyoon/Desktop/Effects of capsaicin treatment on action potential in mouse DRG neurons/CAP_data_separate/CAP 10/003_CAP 10 before/1x Rheobase.xlsx")
+data=df[1][:]
+V=data[501:600,2]*1000
+plot(V)
+
+function alphaM(V)
+    return 0.1 * (-V + 25) / (exp((-V + 25) / 10) - 1)
+end
+
+function betaM(V)
+    return 4 * exp(-V / 18)
+end
+
+function alphaH(V)
+    return 0.07 * exp(-V / 20)
+end
+
+function betaH(V)
+    return 1 / (exp((-V + 30) / 10) + 1)
+end
+
+function alphaN(V)
+    return 0.01 * (-V + 10) / (exp((-V + 10) / 10) - 1)
+end
+
+function betaN(V)
+    return 0.125 * exp(-V / 80)
+end
+
+function alphaE(V)
+    return 1 / (1 + exp(-(V + 55) / 3))
+end
+
+function betaE(V)
+    return 17 * exp((-(V + 45)^2) / 600) + 1.5
+end
+
+m, h, n, e = zeros(length(V)), zeros(length(V)), zeros(length(V)), zeros(length(V))
+
+m[1], h[1], n[1], e[1] = 0.3, 0.1, 0.2, 0.4
+I=10
+thr=30
+#V[i+1] = V[i] + dt * (gNa * m[i]^3 * h[i] * (eNa - (V[i] + thr)) + gK * n[i]^4 * (eK - (V[i] + thr)) + gCa * e[i] * (eCa - (V[i] + thr)) + gL * (eL - (V[i] + thr)) + I)
+dt=0.02
+
+gNa = 120;
+eNa = 120;
+gCa = 0.4;
+eCa = 150;
+gL = 0.3;
+eL = 10.6;
+
+for i = 1 : length(V)-1
+    m[i+1] = m[i] + dt * (alphaM(V[i]) * (1 - m[i]) - betaM(V[i]) * m[i])
+    h[i+1] = h[i] + dt * (alphaH(V[i]) * (1 - h[i]) - betaH(V[i]) * h[i])
+    n[i+1] = n[i] + dt * (alphaN(V[i]) * (1 - n[i]) - betaN(V[i]) * n[i])
+    e[i+1] = e[i] + dt * ((alphaE(V[i]) - e[i]) / betaE(V[i]))
+end
+
+k=(m.^3).*h
+
+
+X1 = hcat(k)
+X2 = hcat(n.^4)
+X3 = hcat(e)
+X4 = hcat(k,n.^4)
+X5 = hcat(n.^4,e)
+X6 = hcat(k,e)
+X7 = hcat(k,n.^4,e)
+y = V#data[501:3001,2]
+
+model = SRRegressor(
+    binary_operators=[+, -, *, /],
+    #unary_operators=[sin,cos,exp],
+    maxsize=50,
+    maxdepth=5,
+    niterations=100,
+    parallelism=:multiprocessing,
+    numprocs=8,
+    populations=80
+)
+mach1 = machine(model, X1, y)
+mach2 = machine(model, X2, y)
+mach3 = machine(model, X3, y)
+mach4 = machine(model, X4, y)
+mach5 = machine(model, X5, y)
+mach6 = machine(model, X6, y)
+mach7 = machine(model, X7, y)
+
+fit!(mach1)
+fit!(mach2)
+fit!(mach3)
+fit!(mach4)
+fit!(mach5)
+fit!(mach6)
+fit!(mach7)
+
+ypred1 = predict(mach1, X1)
+ypred2 = predict(mach2, X2)
+ypred3 = predict(mach3, X3)
+ypred4 = predict(mach4, X4)
+ypred5 = predict(mach5, X5)
+ypred6 = predict(mach6, X6)
+ypred7 = predict(mach7, X7)
+
+function calculate_rms_error(observed::Array{Float64}, predictions::Array{Float64})
+    # Calculate the squared differences
+    squared_errors = (observed .- predictions) .^ 2
+    
+    # Calculate the mean of the squared errors
+    mean_squared_error = mean(squared_errors)
+    
+    # Return the square root of the mean squared error
+    return sqrt(mean_squared_error)
+end
+
+rms_error1 = calculate_rms_error(V, ypred1)
+rms_error2 = calculate_rms_error(V, ypred2)
+rms_error3 = calculate_rms_error(V, ypred3)
+rms_error4 = calculate_rms_error(V, ypred4)
+rms_error5 = calculate_rms_error(V, ypred5)
+rms_error6 = calculate_rms_error(V, ypred6)
+rms_error7 = calculate_rms_error(V, ypred7)
+
+min(rms_error1,rms_error2,rms_error3,rms_error4,rms_error5,rms_error6,rms_error7)
+r = report(mach5)
+
+r.equations[r.best_idx]
+
+plot(ypred7[:, 1], xlabel="Truth", ylabel="Prediction")
+plot!(V)

@@ -1,0 +1,86 @@
+using SymbolicRegression
+using MLJ
+using Plots, DifferentialEquations, Evolutionary, DataDrivenDiffEq, Logging
+using XLSX, DataFrames
+
+df=XLSX.readxlsx("/Users/tyoon/Desktop/Effects of capsaicin treatment on action potential in mouse DRG neurons/CAP_data_separate/CAP 10/003_CAP 10 before/1x Rheobase.xlsx")
+data=df[1][:]
+VV=data[501:3000,2]*1000
+
+function alphaM(V)
+    return 0.1 * (-V + 25) / (exp((-V + 25) / 10) - 1)
+end
+
+function betaM(V)
+    return 4 * exp(-V / 18)
+end
+
+function alphaH(V)
+    return 0.07 * exp(-V / 20)
+end
+
+function betaH(V)
+    return 1 / (exp((-V + 30) / 10) + 1)
+end
+
+function alphaN(V)
+    return 0.01 * (-V + 10) / (exp((-V + 10) / 10) - 1)
+end
+
+function betaN(V)
+    return 0.125 * exp(-V / 80)
+end
+
+function alphaE(V)
+    return 1 / (1 + exp(-(V + 55) / 3))
+end
+
+function betaE(V)
+    return 17 * exp((-(V + 45)^2) / 600) + 1.5
+end
+
+V = zeros(length(data[501:3000,1]))
+m = zeros(length(data[501:3000,1]))
+h = zeros(length(data[501:3000,1]))
+n = zeros(length(data[501:3000,1]))
+e = zeros(length(data[501:3000,1]))
+
+V[1]=-58
+m[1]=0.3
+h[1]=0.1
+n[1]=0.2
+e[1]=0.4
+I=0
+thr=65
+
+gNa, eNa, gCa, eCa, gL, eL, thr, I = 120, 120, 0.4, 150, 0.3, 10.6, 65, 0
+#V[i+1] = V[i] + dt * (gNa * m[i]^3 * h[i] * (eNa - (V[i] + thr)) + gK * n[i]^4 * (eK - (V[i] + thr)) + gCa * e[i] * (eCa - (V[i] + thr)) + gL * (eL - (V[i] + thr)) + I)
+dt=0.02
+for i = 1 : length(V)-1
+    V[i+1] = V[i] + dt * (gNa * m[i]^3 * h[i] * (eNa - (V[i] + thr)) + 
+                      gK * n[i]^4 * (eK - (V[i]+thr)) +
+                      gCa * e[i] * (eCa - (V[i] + thr)) + 
+                      gL * (eL - (V[i] + thr)) + I)
+    m[i+1] = m[i] + dt * (alphaM(V[i]) * (1 - m[i]) - betaM(V[i]) * m[i])
+    h[i+1] = h[i] + dt * (alphaH(V[i]) * (1 - h[i]) - betaH(V[i]) * h[i])
+    n[i+1] = n[i] + dt * (alphaN(V[i]) * (1 - n[i]) - betaN(V[i]) * n[i])
+    e[i+1] = e[i] + dt * ((alphaE(V[i]) - e[i]) / betaE(V[i]))
+end
+
+
+X = hcat(m,n,h,e)
+y = V#data[501:3001,2]
+my_inv(x)=1/x
+model = SRRegressor(
+    binary_operators=[+, -, *, /],
+    unary_operators=[exp,my_inv],
+    niterations=50
+)
+mach = machine(model, X, y)
+fit!(mach)
+
+r = report(mach)
+
+r.equations[r.best_idx]
+
+plot!(VV)
