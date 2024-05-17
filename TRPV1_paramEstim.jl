@@ -73,3 +73,9 @@ ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
 u_predict = [discretization.phi[5]([t], minimizers[1])[1] for t in ts]
 plot(t_[1,:],V[1,:])
 plot!(ts, u_predict)
+
+df_p = DataFrame(gNa = p_[1], gK = p_[2], gCa = p_[3], gL = p_[4])
+CSV.write("parameters.csv", df_p)
+
+df_predict = DataFrame(ts = ts, u_predict = u_predict, t_ = t_[1,:], V = V[1,:])
+CSV.write("data.csv", df_predict)
