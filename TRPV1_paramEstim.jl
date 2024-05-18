@@ -1,8 +1,7 @@
 using NeuralPDE, Lux, ModelingToolkit, Optimization, OptimizationOptimJL, OrdinaryDiffEq,
     Plots, LineSearches
 using ModelingToolkit: Interval, infimum, supremum
-using XLSX, DataFrames, CSV
-
+using XLSX, DataFrames, CSV, Random
 ################################# Paramters #################################
 
 eNa = 61.5*log(140/10)
@@ -65,17 +64,37 @@ callback = function (p, l)
     println("Current iteration: $iter_count / 1500, Current loss: $l")
     return false
 end
-res = Optimization.solve(prob, BFGS(linesearch = BackTracking()); maxiters = 1500, callback = callback)
-p_ = res.u[(end - 3):end] # p_ = [9.93, 28.002, 2.667]
 
-minimizers = [res.u.depvar[depvars[5]]]
-ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
-u_predict = [discretization.phi[5]([t], minimizers[1])[1] for t in ts]
-plot(t_[1,:],V[1,:])
-plot!(ts, u_predict)
+for i in 1:20
+    Random.seed!(i)
+    res = Optimization.solve(prob, BFGS(linesearch = BackTracking()); maxiters = 1500, callback = callback)
+    p_ = res.u[(end - 3):end] # p_ = [9.93, 28.002, 2.667]
 
-df_p = DataFrame(gNa = p_[1], gK = p_[2], gCa = p_[3], gL = p_[4])
-CSV.write("parameters.csv", df_p)
+    minimizers = [res.u.depvar[depvars[5]]]
+    ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
+    u_predict = [discretization.phi[5]([t], minimizers[1])[1] for t in ts]
+    plot(t_[1,:],V[1,:])
+    plot!(ts, u_predict)
 
-df_predict = DataFrame(ts = ts, u_predict = u_predict, t_ = t_[1,:], V = V[1,:])
-CSV.write("data.csv", df_predict)
+    df_p = DataFrame(gNa = p_[1], gK = p_[2], gCa = p_[3], gL = p_[4])
+    CSV.write("parameters$i.csv", df_p)
+
+    df_predict = DataFrame(ts = ts, u_predict = u_predict, t_ = t_[1,:], V = V[1,:])
+    CSV.write("data$i.csv", df_predict)
+end
+
+
+# res = Optimization.solve(prob, BFGS(linesearch = BackTracking()); maxiters = 1500, callback = callback)
+# p_ = res.u[(end - 3):end] # p_ = [9.93, 28.002, 2.667]
+
+# minimizers = [res.u.depvar[depvars[5]]]
+# ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
+# u_predict = [discretization.phi[5]([t], minimizers[1])[1] for t in ts]
+# plot(t_[1,:],V[1,:])
+# plot!(ts, u_predict)
+
+# df_p = DataFrame(gNa = p_[1], gK = p_[2], gCa = p_[3], gL = p_[4])
+# CSV.write("parameters.csv", df_p)
+
+# df_predict = DataFrame(ts = ts, u_predict = u_predict, t_ = t_[1,:], V = V[1,:])
+# CSV.write("data.csv", df_predict)
