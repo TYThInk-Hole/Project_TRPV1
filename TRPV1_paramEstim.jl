@@ -6,8 +6,8 @@ using XLSX, DataFrames, CSV, Random
 
 eNa = 61.5 * log(140 / 10)
 eK = 61.5 * log(5 / 126)
-eCa = 61.5 * log(2 / 0.0002)
-eL = 61.5 * log(149 / 12)
+eCa = 61.5 * log(12 / 10)
+eL = 61.5 * log(151 / 12)
 
 @parameters t, gNa, gK, gCa, gL
 @variables u₁(..), u₂(..), u₃(..), u₄(..), u₅(..)
@@ -54,7 +54,7 @@ discretization = NeuralPDE.PhysicsInformedNN([chain1, chain2, chain3, chain4, ch
     additional_loss=additional_loss)
 
 @named pde_system = PDESystem(eqs, bcs, domains, [t], [u₁(t), u₂(t), u₃(t), u₄(t), u₅(t)], [gNa, gK, gCa, gL],
-    defaults=Dict([gNa => 100.0, gK => 80.0, gCa => 10.0, gL => -10.0]))
+    defaults=Dict([gNa => 100.0, gK => 00.0, gCa => 0.0, gL => 0.0]))
 
 prob = NeuralPDE.discretize(pde_system, discretization)
 
@@ -65,10 +65,8 @@ callback = function (p, l)
     return false
 end
 
-i=2
-Random.seed!(i)
 res = Optimization.solve(prob, BFGS(linesearch=BackTracking()); maxiters=1500, callback=callback)
-p_ = res.u[(end-3):end] # p_ = [9.93, 28.002, 2.667]
+p_ = res.u[(end-3):end]
 
 minimizers = [res.u.depvar[depvars[5]]]
 ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]

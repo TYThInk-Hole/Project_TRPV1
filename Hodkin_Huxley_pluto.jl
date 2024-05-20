@@ -28,14 +28,14 @@ begin
 	md"""
 	Current: $(@bind param NumberField(-100:0.01:200, 0))\
 	gNa: $(@bind gNa NumberField(-100:1:200, 120))\
-	eNa: $(@bind eNa NumberField(-100:0.1:200, 162))\
+	eNa: $(@bind eNa NumberField(-100:0.1:200, 115))\
 	gK: $(@bind gK NumberField(-100:0.1:200, 36))\
-	eK: $(@bind eK NumberField(-100:0.1:200, -198))\
+	eK: $(@bind eK NumberField(-100:0.1:200, -12))\
 	gCa: $(@bind gCa NumberField(-100:0.1:200, 0.4))\
-	eCa: $(@bind eCa NumberField(-100:0.1:200, 566))\
+	eCa: $(@bind eCa NumberField(-100:0.1:200, 150))\
 	gL: $(@bind gL NumberField(-100:0.01:200, 0.3))\
-	eL: $(@bind eL NumberField(-100:0.01:200, 154))\
-	start: $(@bind start NumberField(0:1:100, 1))\
+	eL: $(@bind eL NumberField(-100:0.01:200, 10.6))\
+	start: $(@bind start NumberField(0:1:100, 10))\
 	finish: $(@bind finish NumberField(0:1:100, 30))\
 	"""
 end
@@ -142,9 +142,9 @@ begin
 			# d4=plot(t,I[1,:]);
 			# plot(d1,d2,d3,d4,d5, layout = (5,1));
 		elseif MC == "Na_K_Ca"
-			u0 = [0.5, 0.06, 0.5, 0.1, -65]
+			u0 = [0.5, 0.06, 0.5, 0.1, -55]
 			
-			t, v, I = runge_kutta4(VD_Na_K_Ca,tspan[1],tspan[2],u0,Int(tspan[2]/dt),param,start,finish);
+			t, dv, v, I = runge_kutta4(VD_Na_K_Ca,tspan[1],tspan[2],u0,Int(tspan[2]/dt),param,start,finish);
 	
 	        Na_gate = v[1,:].^3 .* v[2,:];
 			K_gate = v[3,:].^4;
