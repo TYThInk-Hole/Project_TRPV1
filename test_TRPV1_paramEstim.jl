@@ -47,7 +47,7 @@ len = length(data[2])
 
 # Neural network construction
 input_ = length(domains)
-n = 5
+n = 25
 chain1 = Lux.Chain(Dense(input_, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, 1))
 chain2 = Lux.Chain(Dense(input_, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, 1))
 chain3 = Lux.Chain(Dense(input_, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, 1))
@@ -57,7 +57,7 @@ depvars = [:u₁, :u₂, :u₃, :u₄]
 
 # Additional loss function
 function additional_loss(phi, θ, p)
-    return sum(sum(abs2, phi[ii](t_, θ[depvars[ii]]) .- u_[[ii], :]) / len for ii in 1:4)
+    return sum(sum(abs2, phi[ii](t_, θ[depvars[ii]]) .- u_[[ii], :]) / len for ii in 4:4)
 end
 
 discretization = NeuralPDE.PhysicsInformedNN([chain1, chain2, chain3, chain4], 
@@ -86,7 +86,7 @@ ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
 u_predict = [[discretization.phi[j]([t], minimizers[j])[1] for t in ts] for j in 1:4]
 plot(tt,sol[4,:])
 plot!(tt,u_predict[4,:][1])
-
+i=1
 df_p = DataFrame(gNa=p_[1], gK=p_[2], gCa=p_[3], gL=p_[4])
 CSV.write("parameters$i.csv", df_p)
 
