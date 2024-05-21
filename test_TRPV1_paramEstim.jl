@@ -55,7 +55,7 @@ chain4 = Lux.Chain(Dense(input_, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, n, Lu
 depvars = [:u₁, :u₂, :u₃, :u₄]
 
 function additional_loss(phi, θ, p)
-    return sum(sum(abs2, phi[i](t_, θ[depvars[i]]) .- u_[[i], :]) / len for i in 1:4)
+    return sum(sum(abs2, phi[ii](t_, θ[depvars[ii]]) .- u_[[ii], :]) / len for ii in 1:4)
 end
 
 discretization = NeuralPDE.PhysicsInformedNN([chain1, chain2, chain3, chain4],
@@ -81,7 +81,7 @@ tt = collect(LinRange(0, 30, 1501))
 tt1 = collect(LinRange(0, 30, 108))
 minimizers = [res.u.depvar[depvars[i]] for i in 1:4]
 ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
-u_predict = [[discretization.phi[i]([t], minimizers[i])[1] for t in ts] for i in 1:4]
+u_predict = [[discretization.phi[j]([t], minimizers[j])[1] for t in ts] for j in 1:4]
 plot(tt1,sol[4,:])
 plot!(tt,u_predict[4,:][1])
 
