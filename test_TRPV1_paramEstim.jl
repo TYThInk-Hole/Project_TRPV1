@@ -81,11 +81,10 @@ res = Optimization.solve(prob, BFGS(linesearch=BackTracking()); maxiters=1000, c
 p_ = res.u[(end-5):end]
 
 tt = collect(LinRange(0, 30, 1501))
-tt1 = collect(LinRange(0, 30, 108))
 minimizers = [res.u.depvar[depvars[i]] for i in 1:4]
 ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
 u_predict = [[discretization.phi[j]([t], minimizers[j])[1] for t in ts] for j in 1:4]
-plot(tt1,sol[4,:])
+plot(tt,sol[4,:])
 plot!(tt,u_predict[4,:][1])
 
 df_p = DataFrame(gNa=p_[1], gK=p_[2], gCa=p_[3], gL=p_[4])
