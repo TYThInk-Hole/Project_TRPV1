@@ -1,7 +1,7 @@
 using NeuralPDE, Lux, ModelingToolkit, Optimization, OptimizationOptimJL, OrdinaryDiffEq,
     Plots, LineSearches
 using ModelingToolkit: Interval, infimum, supremum
-
+using Base.Threads
 # Parameters and Variables
 @parameters t, gNa, eNa, gK, eK, gL, eL
 @variables u₁(..), u₂(..), u₃(..), u₄(..)
@@ -26,11 +26,11 @@ function VDIC!(du, u, p, t)
     du[4] = (p[1] * u[1]^3 * u[2] * (p[2] - (u[4] + 55.0)) + p[3] * u[3]^4 * (p[4] - (u[4] + 55.0)) + p[5] * (p[6] - (u[4] + 55.0)) + 3.0)
 end
 
-p = [120.0, 115.0, 36.0, -12.0, 0.4, 10.6]
+p = [120.0, 115.0, 36.0, -12.0, 0.3, 10.6]
 u0 = [0.5; 0.06; 0.5; -55.0]
 tspan = (0.0, 30.0)
 prob = ODEProblem(VDIC!, u0, tspan, p)
-sol = solve(prob, Tsit5(), tstops = LinRange(0.0, 30.0, 1501))
+sol = solve(prob, Tsit5(), saveat = LinRange(0.0, 30.0, 1501))
 ts = [infimum(d.domain):0.02:supremum(d.domain) for d in domains][1]
 
 # Function to get data from solution
@@ -77,10 +77,22 @@ callback = function (p, l)
     return false
 end
 
+###################### Single-Core Training ######################
 res = Optimization.solve(prob, BFGS(linesearch=BackTracking()); maxiters=1000, callback=callback)
+###################### Single-Core Training ######################
+
+
+###################### Multi-Core Training ######################
+# function optimize_in_thread(prob)
+#     return Optimization.solve(prob, LBFGS(linesearch=BackTracking()); maxiters=1000, callback=callback)
+# end
+
+# results = [Threads.@spawn optimize_in_thread(prob) for i in 1:6]
+# res = fetch.(results)
+###################### Multi-Core Training ######################
 p_ = res.u[(end-5):end]
 
-tt = collect(LinRange(0, 30, 1501))
+tt = collect(LinRange(0, 30.0, 1501))
 minimizers = [res.u.depvar[depvars[i]] for i in 1:4]
 ts = [infimum(d.domain):(0.02):supremum(d.domain) for d in domains][1]
 u_predict = [[discretization.phi[j]([t], minimizers[j])[1] for t in ts] for j in 1:4]
