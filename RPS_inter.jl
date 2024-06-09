@@ -32,7 +32,7 @@ function RPS_inter_individualt(Lsize, reproduction_rate, selection_rate, mobilit
         Point = true
         G = 1
         generation += 1
-        println("Generation: ", generation)
+        # println("Generation: ", generation)
         stack_inter = zeros(Int, Lsize^2, 3)
 
         while Point
@@ -147,15 +147,15 @@ function RPS_inter_individualt(Lsize, reproduction_rate, selection_rate, mobilit
             Flag = false
         end
     end
-    return Data_inter
+    # return Data_inter
 end
 
 # Example usage
-Lsize = 500
+Lsize = 200
 reproduction_rate = 1
 selection_rate = 1
 mobility = 50
 para = 1
 rn = 1
 
-@time Data_inter = RPS_inter_individualt(Lsize, reproduction_rate, selection_rate, mobility, para, rn)
+@time A = RPS_inter_individualt(Lsize, reproduction_rate, selection_rate, mobility, para, rn)
