@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.10.2)  12 JUN 2024 17:39
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.10.2)  12 JUN 2024 23:04
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/Volumes/yoonD/Project_TRPV1/TRPV1.tex
-(/Volumes/yoonD/Project_TRPV1/TRPV1.tex
+**/Volumes/yoonD/Project_TRPV1/LaTex_TRPV1/TRPV1.tex
+(/Volumes/yoonD/Project_TRPV1/LaTex_TRPV1/TRPV1.tex
 LaTeX2e <2020-02-02> patch level 5
 L3 programming layer <2020-03-06> (/usr/local/texlive/2020/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2019/12/20 v1.4l Standard LaTeX document class
@@ -206,7 +206,7 @@ Package: fancyhdr 2019/01/31 v3.10 Extensive control of page headers and footers
 File: l3backend-pdfmode.def 2020-03-12 L3 backend support: PDF mode
 \l__kernel_color_stack_int=\count197
 \l__pdf_internal_box=\box47
-) (/Volumes/yoonD/Project_TRPV1/TRPV1.aux)
+) (/Volumes/yoonD/Project_TRPV1/LaTex_TRPV1/TRPV1.aux)
 \openout1 = `TRPV1.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
@@ -258,7 +258,7 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 18.
 LaTeX Info: Redefining \pageref on input line 18.
 LaTeX Info: Redefining \nameref on input line 18.
- (/Volumes/yoonD/Project_TRPV1/TRPV1.out) (/Volumes/yoonD/Project_TRPV1/TRPV1.out)
+ (/Volumes/yoonD/Project_TRPV1/LaTex_TRPV1/TRPV1.out) (/Volumes/yoonD/Project_TRPV1/LaTex_TRPV1/TRPV1.out)
 \@outlinefile=\write3
 \openout3 = `TRPV1.out'.
 
@@ -275,7 +275,7 @@ This may cause the page layout to be inconsistent, however.
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 132.
  [3]
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 132.
- (/Volumes/yoonD/Project_TRPV1/TRPV1.aux)
+ (/Volumes/yoonD/Project_TRPV1/LaTex_TRPV1/TRPV1.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 132.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 132.
 Package rerunfilecheck Info: File `TRPV1.out' has not changed.
@@ -284,14 +284,14 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 132.
  ) 
 Here is how much of TeX's memory you used:
  5908 strings out of 480608
- 89408 string characters out of 5903630
- 354458 words of memory out of 5000000
+ 89564 string characters out of 5903630
+ 354463 words of memory out of 5000000
  21701 multiletter control sequences out of 15000+600000
  535856 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 34i,10n,45p,253b,396s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 34i,10n,45p,263b,396s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on /Volumes/yoonD/Project_TRPV1/TRPV1.pdf (3 pages, 48903 bytes).
+Output written on /Volumes/yoonD/Project_TRPV1/LaTex_TRPV1/TRPV1.pdf (3 pages, 48980 bytes).
 PDF statistics:
  53 PDF objects out of 1000 (max. 8388607)
  43 compressed objects within 1 object stream
