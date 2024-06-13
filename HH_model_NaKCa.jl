@@ -3,13 +3,14 @@ using MLJ
 using Plots, DifferentialEquations, Evolutionary, DataDrivenDiffEq, Logging
 using XLSX, DataFrames
 
-function runge_kutta4(f, t0, tf, y0, N)
+function runge_kutta4(f, t0, tf, y0, N, param)
     
     # Initialize arrays
-    Currents=ones(1,N+1)*30
+    Currents=ones(1,N+1)*param
     # Currents[Int(40/dt):Int(50/dt)].=10
     t = LinRange(t0, tf, N+1)
-    y = zeros(length(y0), N+1)  # Adjust size if y0 is a vector
+    y = zeros(length(y0), N+1)
+    dy = zeros(length(y0), N+1)  # Adjust size if y0 is a vector
     y[:, 1] .= y0
     
     h = (tf - t0) / N  # Step size
@@ -22,10 +23,11 @@ function runge_kutta4(f, t0, tf, y0, N)
         k3 = h * f(t[i] + 0.5*h, y[:, i] + 0.5*k2, I1)
         k4 = h * f(t[i] + h, y[:, i] + k3, I1)
         
+        dy[:, i+1] = (k1 + 2*k2 + 2*k3 + k4) / 6
         y[:, i+1] = y[:, i] + (k1 + 2*k2 + 2*k3 + k4) / 6
     end
     
-    return t, y, Currents
+    return t, y, dy, Currents
 end
 
 gNa = 120.0
@@ -46,7 +48,7 @@ eL = 10.6
 # gCa = 33.97
 # gL = 4.05
 
-tspan = (0,30)
+tspan = (0,100)
 dt = 0.02
 
 VD_Na_Ca = (t, Y, I) -> [((2.5 - 0.1 * (Y[4] + 65)) / (exp(2.5 - 0.1 * (Y[4] + 65)) - 1))*(1-Y[1]) - (4.4 * exp(-(Y[4] + 65) / 18)) * Y[1];
@@ -63,17 +65,22 @@ plot(t,v_naca[4,:])
 ######################################################################################################
 ######################################################################################################
 
-VD_Na_K = (t, Y, I) -> [((2.5 - 0.1 * (Y[4] + 65)) / (exp(2.5 - 0.1 * (Y[4] + 65)) - 1))*(1-Y[1]) - (4.4 * exp(-(Y[4] + 65) / 18)) * Y[1];
-                    (0.6 * exp(-(Y[4] + 65) / 20))*(1-Y[2]) - (1 / (exp(3.0 - 0.1 * (Y[4] + 65)) + 1))*Y[2];
-                    ((0.1 - 0.01 * (Y[4] + 65)) / (exp(1 - 0.1 * (Y[4] + 65)) - 1))*(1-Y[3]) - (0.125 * exp(-(Y[4] + 65) / 80))*Y[3];
-                    (gNa * Y[1]^3 * Y[2] * (eNa - (Y[4] + 65)) + gK * Y[3]^4 * (eK - (Y[4] + 65)) + gL * (eL - (Y[4] + 65)) + I)]
+# VD_Na_K = (t, Y, I) -> [((2.5 - 0.1 * (Y[4] + 65)) / (exp(2.5 - 0.1 * (Y[4] + 65)) - 1))*(1-Y[1]) - (4.4 * exp(-(Y[4] + 65) / 18)) * Y[1];
+#                     (0.6 * exp(-(Y[4] + 65) / 20))*(1-Y[2]) - (1 / (exp(3.0 - 0.1 * (Y[4] + 65)) + 1))*Y[2];
+#                     ((0.1 - 0.01 * (Y[4] + 65)) / (exp(1 - 0.1 * (Y[4] + 65)) - 1))*(1-Y[3]) - (0.125 * exp(-(Y[4] + 65) / 80))*Y[3];
+#                     (gNa * Y[1]^3 * Y[2] * (eNa - (Y[4] + 65)) + gK * Y[3]^4 * (eK - (Y[4] + 65)) + gL * (eL - (Y[4] + 65)) + I)]
 
-u0_Na_K = [0.5,0.06,0.5, -65]
+VD_Na_K = (t, Y, I) -> [((0.1 * (Y[4] + 40)) / (-exp(-0.1 * (Y[4] + 40)) + 1)) * (1 - Y[1]) - (4.4 * exp(-(Y[4] + 56) / 18)) * Y[1];
+	            (0.07 * exp(-(Y[4] + 56) / 20)) * (1 - Y[2]) - (1 / (exp(- 0.1 * (Y[4] + 35)) + 1)) * Y[2];
+	            ((0.01 * (Y[4] + 55)) / (-exp(- 0.1 * (Y[4] + 55)) + 1)) * (1 - Y[3]) - (0.125 * exp(-(Y[4] + 56) / 80)) * Y[3];
+	            (gNa * Y[1]^3 * Y[2] * (eNa - (Y[4] + 56)) + gK * Y[3]^4 * (eK - (Y[4] + 56)) + gL * (eL - (Y[4] + 56)) + I)]
 
-t, v_nak, I = runge_kutta4(VD_Na_K,tspan[1],tspan[2],u0_Na_K,Int(tspan[2]/dt))
+u0_Na_K = [0.5,0.06,0.5, -56]
 
-plot!(t,v_nak[4,:])
+t, v_nak, dv, I = runge_kutta4(VD_Na_K,tspan[1],tspan[2],u0_Na_K,Int(tspan[2]/dt),0)
 
+plot(t,v_nak[4,:])
+plot(t,dv[4,:])
 ######################################################################################################
 ######################################################################################################
 
@@ -85,7 +92,7 @@ VD_Na_K_Ca = (t, Y, I) -> [((2.5 - 0.1 * (Y[5] + 0.0)) / (exp(2.5 - 0.1 * (Y[5] 
 
 u0_Na_K_Ca = [0.5,0.06,0.5,0.1, -55]
 
-t, v_nakca, I = runge_kutta4(VD_Na_K_Ca,tspan[1],tspan[2],u0_Na_K_Ca,Int(tspan[2]/dt))
+t, v_nakca, dv, I = runge_kutta4(VD_Na_K_Ca,tspan[1],tspan[2],u0_Na_K_Ca,Int(tspan[2]/dt))
 
 plot(t,v_nakca[5,:])
 

@@ -29,8 +29,13 @@ prob = ODEProblem(Na_K_Ca, u0, tspan, [120.0, 36.0, 0.4, 0.3])
 df = XLSX.readxlsx("/Users/tyoon/Desktop/Effects of capsaicin treatment on action potential in mouse DRG neurons/CAP_data_separate/CAP 10/003_CAP 10 before/1x Rheobase.xlsx")
 data = df[1][:]
 
-t_ = reshape(collect(LinRange(0, 30, 1501)), 1, :)
-u_ = reshape(data[500:2000, 2] * 1000, 1, :)
+# t_ = reshape(collect(LinRange(0, 30, 1501)), 1, :)
+# u_ = reshape(data[500:2000, 2] * 1000, 1, :)
+
+t_ = vec(collect(LinRange(0, 30, 1501)))
+u_ = vec(data[500:2000, 2] * 1000)
+
+u_reshaped = reshape(u_, (1501, 1))
 
 rng = Random.default_rng()
 Random.seed!(rng, 0)
@@ -39,12 +44,21 @@ chain = Lux.Chain(
     Lux.Dense(1, n, Lux.σ),
     Lux.Dense(n, n, Lux.σ),
     Lux.Dense(n, n, Lux.σ),
-    Lux.Dense(n, 4)
+    Lux.Dense(n, 5)
 )
 ps, st = Lux.setup(rng, chain) |> Lux.f64
 
+# function additional_loss(phi, θ)
+#     return sum(abs2, phi(t_, θ) .- u_) / size(u_, 2)
+# end
+    
 function additional_loss(phi, θ)
-    return sum(abs2, phi(t_, θ) .- u_) / size(u_, 2)
+    # Compute the output of the neural network
+    phi_output = phi(t_, θ)
+    # Ensure the output is reshaped properly
+    phi_output_reshaped = reshape(phi_output, (1501, 5))
+    # Calculate the loss
+    return sum(abs2, phi_output_reshaped .- u_reshaped) / length(u_)
 end
 
 opt = LBFGS(linesearch=BackTracking())

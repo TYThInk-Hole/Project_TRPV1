@@ -15,7 +15,7 @@ eqs = [Dt(u₁(t)) ~ ((2.5 - 0.1 * (u₄(t) + 55.0)) / (exp(2.5 - 0.1 * (u₄(t)
 
 # Initial conditions and domains
 bcs = [u₁(0) ~ 0.5, u₂(0) ~ 0.06, u₃(0) ~ 0.5, u₄(0) ~ -55.0]
-domains = [t ∈ Interval(0.0, 30.0)]
+domains = [t ∈ Interval(0.0, 2.0)]
 dt = 0.01
 
 # ODE problem definition
@@ -28,7 +28,7 @@ end
 
 p = [120.0, 36.0, 0.3]
 u0 = [0.5; 0.06; 0.5; -55.0]
-tspan = (0.0, 15.0)
+tspan = (0.0, 2.0)
 prob = ODEProblem(VDIC!, u0, tspan, p)
 sol = solve(prob, Tsit5(), dt=0.1)
 ts = [infimum(d.domain):0.01:supremum(d.domain) for d in domains][1]
@@ -47,7 +47,7 @@ len = length(data[2])
 
 # Neural network construction
 input_ = length(domains)
-n = 50
+n = 10
 chain1 = Lux.Chain(Dense(input_, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, 1))
 chain2 = Lux.Chain(Dense(input_, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, 1))
 chain3 = Lux.Chain(Dense(input_, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, n, Lux.σ), Dense(n, 1))
@@ -78,7 +78,7 @@ callback = function (p, l)
 end
 
 ###################### Single-Core Training ######################
-res = Optimization.solve(prob, BFGS(linesearch=BackTracking()); maxiters=1000, callback=callback)
+res = Optimization.solve(prob, BFGS(linesearch=BackTracking()); maxiters=500, callback=callback)
 ###################### Single-Core Training ######################
 
 
