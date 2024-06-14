@@ -6,8 +6,8 @@ using XLSX, DataFrames
 function runge_kutta4(f, t0, tf, y0, N)
     
     # Initialize arrays
-    Currents=ones(1,N+1)*30
-    # Currents[Int(40/dt):Int(50/dt)].=10
+    Currents=ones(1,N+1)*0
+    Currents[Int(50/dt):Int(95/dt)].=6
     t = LinRange(t0, tf, N+1)
     y = zeros(length(y0), N+1)  # Adjust size if y0 is a vector
     y[:, 1] .= y0
@@ -28,21 +28,22 @@ function runge_kutta4(f, t0, tf, y0, N)
     return t, y, Currents
 end
 
-VD_Na_K = (t, Y, I) -> [(0.1 * (Y[4] + 40) / (1 - exp(-(Y[4] + 40) / 10)))*(1-Y[1]) - (4.0 * exp(-(Y[4] + 65) / 18)) * Y[1];
-                    (0.07 * exp(-(Y[4] + 65) / 20))*(1-Y[2]) - (1.0 / (1 + exp(-(Y[4] + 35) / 10)))*Y[2];
-                    (0.01 * (Y[4] + 55) / (1 - exp(-(Y[4] + 55) / 10)))*(1-Y[3]) - (0.125 * exp(-(Y[4] + 65) / 80))*Y[3];
-                    (gNa * Y[1]^3 * Y[2] * (eNa - (Y[4])) + gK * Y[3]^4 * (eK - (Y[4])) + gL * (eL - (Y[4])) + I)]
+VD_Na_K = (t, Y, I) -> [((2.5-0.1*(Y[4]+56)) ./ (exp(2.5-0.1*(Y[4]+56)) -1))*(1-Y[1]) - (4*exp(-(Y[4]+56)/18)) * Y[1];
+(0.07 * exp(-((Y[4]+56) / 20)))*(1-Y[2]) - (1/(exp(3.0-0.1*(Y[4]+56))+1))*Y[2];
+((0.1-0.01*(Y[4]+56)) ./ (exp(1-0.1*(Y[4]+56)) -1))*(1-Y[3]) - (0.125*exp(-(Y[4]+56)/80))*Y[3];
+(gNa * Y[1]^3 * Y[2] * (eNa - (Y[4]+56)) + gK * Y[3]^4 * (eK - (Y[4]+56)) + gL * (eL - (Y[4]+56)) + I)
+]
 
 gNa = 120.0
-eNa = 50.0
+eNa = 115.0
 gK = 36.0
-eK = -77.0
+eK = -12.0
 gL = 0.3
-eL = -54.387
+eL = 10.2
 
-tspan = (0,20)
+tspan = (0,100)
 dt = 0.001
-u0 = [0.5,0.06,0.5, -55]
+u0 = [0.0,0.0,0.0,0.0]
 
 
 t, vv, I = runge_kutta4(VD_Na_K,tspan[1],tspan[2],u0,Int(tspan[2]/dt))
